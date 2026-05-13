@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Car Tracking Real-time</title>
+    <meta charset="utf-8" />
+    <!-- โหลดระบบแผนที่ฟรี Leaflet -->
+    <link rel="stylesheet" href="unpkg.com" />
+    <script src="unpkg.com"></script>
+    
+    <!-- โหลดระบบเชื่อมต่อ Firebase SDK v8 -->
+    <script src="gstatic.com"></script>
+    <script src="gstatic.com"></script>
+    
+    <style>
+        #map { height: 100vh; width: 100%; }
+        body { margin: 0; padding: 0; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // ใช้ลิงก์จากหน้าจอ Kodular ของคุณแบบถูกต้อง 100%
+        const firebaseConfig = {
+            databaseURL: "firebasedatabase.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // สร้างแผนที่เริ่มต้น (พิกัดประเทศไทย)
+        const map = L.map('map').setView([13.7563, 100.5018], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // สร้างหมุดปักตำแหน่งรถ
+        let carMarker = L.marker([13.7563, 100.5018]).addTo(map);
+
+        // ดึงข้อมูลพิกัดแบบ Real-time จากทาง Kodular
+        database.ref('car').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const lat = parseFloat(data.lat);
+                const lng = parseFloat(data.lng);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    carMarker.setLatLng([lat, lng]);
+                    map.setView([lat, lng]); 
+                }
+            }
+        });
+    </script>
+</body>
+</html>
